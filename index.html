@@ -173,12 +173,23 @@
             let totalDeposited = 0;
             let totalWithdrawn = 0;
             let currentBankroll = 0;
+            let customSaldo = 0; // Novo cálculo de Saldo
             
             const processed = historyData.map(entry => {
                 const profit = entry.withdraw - entry.deposit;
                 totalDeposited += entry.deposit;
                 totalWithdrawn += entry.withdraw;
                 currentBankroll += profit;
+                
+                // Lógica do Saldo: 
+                // Se ganhou: Soma o saque bruto (ignora o custo do depósito naquele dia)
+                // Se perdeu: Subtrai o depósito
+                if (entry.won) {
+                    customSaldo += entry.withdraw;
+                } else {
+                    customSaldo -= entry.deposit;
+                }
+
                 return { ...entry, profit, bankroll: currentBankroll };
             });
 
@@ -189,6 +200,7 @@
                 processed,
                 netProfit: totalWithdrawn - totalDeposited,
                 totalWithdrawn,
+                customSaldo, // Retorna o saldo calculado
                 lastEntry: processed[processed.length - 1],
                 allHouses
             };
@@ -224,8 +236,9 @@
             const statusColor = isWin ? 'text-emerald-400' : 'text-rose-400';
             const statusBg = isWin ? 'from-emerald-500/10 to-emerald-500/5 border-emerald-500/20' : 'from-rose-500/10 to-rose-500/5 border-rose-500/20';
             const emoji = isWin ? '😢' : '🤣';
-            const title = isWin ? 'SIM, ELE GANHOU' : 'NÃO, DEU RUIM';
-            const subtitle = isWin ? 'Infelizmente o homem forrou.' : 'A casa sempre vence.';
+            // Novas mensagens solicitadas
+            const title = isWin ? 'SIM, ELE GANHOU' : 'NÃO DEU...';
+            const subtitle = isWin ? 'Infelizmente o homem forrou.' : 'Hoje tem rivotril 💊';
 
             // Generate Houses HTML
             const housesHtml = stats.allHouses.map(h => 
@@ -279,8 +292,8 @@
                                 ${stats.netProfit >= 0 ? '+' : ''}${formatCurrency(stats.netProfit)}
                             </div>
                             <div class="mt-4 pt-4 border-t border-zinc-800 flex justify-between items-center text-sm">
-                                <span class="text-zinc-500">Total Sacado</span>
-                                <span class="text-zinc-300 font-mono">${formatCurrency(stats.totalWithdrawn)}</span>
+                                <span class="text-zinc-500">Saldo (Bolso)</span>
+                                <span class="text-zinc-300 font-mono font-bold">${formatCurrency(stats.customSaldo)}</span>
                             </div>
                         </div>
 
