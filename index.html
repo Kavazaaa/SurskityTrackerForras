@@ -1,245 +1,387 @@
-import React, { useState, useMemo } from 'react';
-import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, ReferenceLine } from 'recharts';
-import { TrendingUp, TrendingDown, DollarSign, Calendar, Activity, AlertCircle } from 'lucide-react';
-
-const SurskityTracker = () => {
-  // DADOS INICIAIS (Aqui ficará o histórico salvo conforme você me atualizar)
-  // Estrutura: { date: 'DD/MM/YYYY', deposit: number, withdraw: number, games: string[], won: boolean }
-  const initialHistory = [
-    {
-      id: 1,
-      date: '09/02/2026',
-      deposit: 6000,
-      withdraw: 10000,
-      games: ['Blackjack'],
-      won: true
-    }
-  ];
-
-  const [history, setHistory] = useState(initialHistory);
-
-  // Cálculos derivados
-  const stats = useMemo(() => {
-    let totalDeposited = 0;
-    let totalWithdrawn = 0;
-    let currentBankroll = 0; // Banca Hipotética (Acumulado)
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Surskity Tracker</title>
     
-    // Preparar dados para o gráfico
-    const chartData = history.map(entry => {
-      const profit = entry.withdraw - entry.deposit;
-      totalDeposited += entry.deposit;
-      totalWithdrawn += entry.withdraw;
-      currentBankroll += profit;
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
-      return {
-        date: entry.date.slice(0, 5), // Pegar apenas DD/MM
-        fullDate: entry.date,
-        profit: profit,
-        bankroll: currentBankroll,
-        games: entry.games.join(', '),
-        won: entry.won
-      };
-    });
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
 
-    return {
-      totalDeposited,
-      totalWithdrawn,
-      netProfit: totalWithdrawn - totalDeposited,
-      chartData,
-      lastEntry: history[history.length - 1]
-    };
-  }, [history]);
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700;900&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
 
-  // Formatação de moeda
-  const formatCurrency = (value) => {
-    return new Intl.NumberFormat('pt-BR', {
-      style: 'currency',
-      currency: 'BRL'
-    }).format(value);
-  };
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #000;
+        }
+        .font-mono {
+            font-family: 'JetBrains Mono', monospace;
+        }
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #18181b; 
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #ec4899; 
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #db2777; 
+        }
+        .text-shadow-sm {
+            text-shadow: 0 1px 2px rgba(0,0,0,0.5);
+        }
+        .glow-pink {
+            box-shadow: 0 0 15px rgba(236,72,153,0.1);
+        }
+    </style>
+    
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        zinc: {
+                            900: '#18181b',
+                            800: '#27272a',
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+</head>
+<body class="text-pink-50 min-h-screen p-4 md:p-8 selection:bg-pink-500 selection:text-white">
 
-  const lastEntryProfit = stats.lastEntry.withdraw - stats.lastEntry.deposit;
-
-  return (
-    <div className="min-h-screen bg-black text-pink-50 p-4 md:p-8 font-sans selection:bg-pink-500 selection:text-white">
-      <div className="max-w-4xl mx-auto space-y-6">
+    <div class="max-w-4xl mx-auto space-y-6">
         
-        {/* HEADER */}
-        <header className="text-center space-y-2 mb-8">
-          <h1 className="text-4xl md:text-6xl font-black text-transparent bg-clip-text bg-gradient-to-r from-pink-500 via-fuchsia-500 to-pink-500 drop-shadow-sm">
-            Surskity Ganhou Hoje?
-          </h1>
-          <p className="text-pink-300/60 text-sm md:text-base tracking-widest uppercase">
-            Monitoramento oficial da banca hipotética 
-          </p>
+        <!-- HEADER -->
+        <header class="text-center space-y-2 mb-8">
+            <h1 class="text-4xl md:text-6xl font-black text-transparent bg-clip-text bg-gradient-to-r from-pink-500 via-fuchsia-500 to-pink-500 drop-shadow-sm">
+                Surskity Ganhou Hoje?
+            </h1>
+            <p class="text-pink-300/60 text-sm md:text-base tracking-widest uppercase">
+                Monitoramento oficial da banca hipotética
+            </p>
         </header>
 
-        {/* STATUS CARD (MAIN) */}
-        <div className="bg-zinc-900 rounded-2xl border border-pink-500/20 shadow-[0_0_15px_rgba(236,72,153,0.1)] overflow-hidden relative">
-          <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-pink-600 via-fuchsia-600 to-pink-600"></div>
-          <div className="p-8 text-center space-y-4">
-            <h2 className="text-xl text-pink-400 font-bold uppercase tracking-widest text-shadow-sm">Status do Dia ({stats.lastEntry.date})</h2>
+        <!-- STATUS CARD (MAIN) -->
+        <div id="status-card-container" class="bg-zinc-900 rounded-2xl border border-pink-500/20 glow-pink overflow-hidden relative">
+            <div class="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-pink-600 via-fuchsia-600 to-pink-600"></div>
+            <!-- Content will be injected by JS -->
+        </div>
+
+        <!-- DASHBOARD GRID -->
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
             
-            <div className="flex flex-col items-center justify-center space-y-2 py-4">
-              {stats.lastEntry.won ? (
-                <>
-                  <span className="text-6xl md:text-7xl animate-bounce filter drop-shadow-[0_0_10px_rgba(34,197,94,0.5)]">😢</span>
-                  <h3 className="text-4xl md:text-5xl font-black text-green-500 drop-shadow-lg tracking-tight">
-                    SIM, ELE GANHOU
-                  </h3>
-                  <p className="text-green-400/60 italic font-medium">Que dia triste para a torcida contra...</p>
-                </>
-              ) : (
-                <>
-                  <span className="text-6xl md:text-7xl animate-pulse filter drop-shadow-[0_0_10px_rgba(239,68,68,0.5)]">🤣</span>
-                  <h3 className="text-4xl md:text-5xl font-black text-red-500 drop-shadow-lg tracking-tight">
-                    NÃO, DEU RUIM
-                  </h3>
-                  <p className="text-red-400/60 italic font-medium">A justiça foi feita!</p>
-                </>
-              )}
+            <!-- STATS COLUMN -->
+            <div class="lg:col-span-1 space-y-4">
+                <div class="bg-zinc-900 p-6 rounded-xl border border-pink-500/20 shadow-lg h-full">
+                    <div class="flex items-center space-x-2 mb-4 text-pink-500">
+                        <i data-lucide="activity" size="20"></i>
+                        <h3 class="font-bold text-lg text-pink-100">Resumo da Banca</h3>
+                    </div>
+                    
+                    <div class="space-y-6">
+                        <div>
+                            <p class="text-xs text-pink-400/60 uppercase font-bold tracking-wider">Lucro Líquido Total</p>
+                            <p id="total-net-profit" class="text-3xl font-black font-mono mt-1">
+                                <!-- JS Injection -->
+                            </p>
+                        </div>
+                        <div class="pt-4 border-t border-pink-500/10">
+                            <p class="text-xs text-pink-400/60 uppercase font-bold tracking-wider">Saque Total</p>
+                            <p id="total-withdrawn" class="text-xl font-bold text-pink-100 font-mono mt-1">
+                                <!-- JS Injection -->
+                            </p>
+                        </div>
+                    </div>
+                </div>
             </div>
 
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-8 pt-6 border-t border-pink-500/10">
-              <div className="bg-black/40 p-3 rounded-lg border border-pink-500/10">
-                <p className="text-[10px] text-pink-400/70 uppercase font-bold tracking-wider">Jogos</p>
-                <p className="font-bold text-pink-100">{stats.lastEntry.games.join(', ')}</p>
-              </div>
-              <div className="bg-black/40 p-3 rounded-lg border border-pink-500/10">
-                <p className="text-[10px] text-pink-400/70 uppercase font-bold tracking-wider">Depósito</p>
-                <p className="font-mono text-pink-100">{formatCurrency(stats.lastEntry.deposit)}</p>
-              </div>
-              <div className="bg-black/40 p-3 rounded-lg border border-pink-500/10">
-                <p className="text-[10px] text-pink-400/70 uppercase font-bold tracking-wider">Saque</p>
-                <p className="font-mono text-pink-100">{formatCurrency(stats.lastEntry.withdraw)}</p>
-              </div>
-              <div className={`bg-black/40 p-3 rounded-lg border ${lastEntryProfit >= 0 ? 'border-green-500/30' : 'border-red-500/30'}`}>
-                <p className="text-[10px] text-pink-400/70 uppercase font-bold tracking-wider">Resultado</p>
-                <p className={`font-black font-mono ${lastEntryProfit >= 0 ? 'text-green-400' : 'text-red-400'}`}>
-                  {lastEntryProfit >= 0 ? '+' : ''}{formatCurrency(lastEntryProfit)}
-                </p>
-              </div>
+            <!-- CHART COLUMN -->
+            <div class="lg:col-span-2 bg-zinc-900 p-6 rounded-xl border border-pink-500/20 shadow-lg min-h-[300px]">
+                <h3 class="font-bold text-lg text-pink-100 mb-6 flex items-center">
+                    <i data-lucide="trending-up" class="mr-2 text-pink-500"></i>
+                    Evolução da Forra
+                </h3>
+                <div class="h-64 w-full relative">
+                    <canvas id="profitChart"></canvas>
+                </div>
             </div>
-          </div>
         </div>
 
-        {/* GRAFICO E ESTATISTICAS */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          {/* Coluna Esquerda: Estatisticas Gerais */}
-          <div className="lg:col-span-1 space-y-4">
-            <div className="bg-zinc-900 p-6 rounded-xl border border-pink-500/20 shadow-lg">
-              <div className="flex items-center space-x-2 mb-4 text-pink-500">
-                <Activity size={20} />
-                <h3 className="font-bold text-lg text-pink-100">Resumo da Banca</h3>
-              </div>
-              
-              <div className="space-y-6">
-                <div>
-                  <p className="text-xs text-pink-400/60 uppercase font-bold tracking-wider">Lucro Líquido Total</p>
-                  <p className={`text-3xl font-black font-mono mt-1 ${stats.netProfit >= 0 ? 'text-green-400' : 'text-red-400'}`}>
-                    {stats.netProfit >= 0 ? '+' : ''}{formatCurrency(stats.netProfit)}
-                  </p>
-                </div>
-                <div className="pt-4 border-t border-pink-500/10">
-                  <p className="text-xs text-pink-400/60 uppercase font-bold tracking-wider">Saque</p>
-                  <p className="text-xl font-bold text-pink-100 font-mono mt-1">
-                    {formatCurrency(stats.totalWithdrawn)}
-                  </p>
-                </div>
-              </div>
+        <!-- HISTORY LIST -->
+        <div class="bg-zinc-900 rounded-xl border border-pink-500/20 overflow-hidden shadow-lg">
+            <div class="p-4 bg-zinc-900 border-b border-pink-500/20 flex items-center justify-between">
+                <h3 class="font-bold text-lg text-pink-100 flex items-center">
+                    <i data-lucide="calendar" class="mr-2 text-pink-500"></i>
+                    Histórico de Operações
+                </h3>
+                <span id="history-count" class="text-xs font-bold text-pink-500 bg-pink-500/10 px-3 py-1 rounded-full border border-pink-500/20">
+                    0 REGISTROS
+                </span>
             </div>
-          </div>
-
-          {/* Coluna Direita: Gráfico */}
-          <div className="lg:col-span-2 bg-zinc-900 p-6 rounded-xl border border-pink-500/20 shadow-lg min-h-[300px]">
-            <h3 className="font-bold text-lg text-pink-100 mb-6 flex items-center">
-              <TrendingUp className="mr-2 text-pink-500" size={20} />
-              Evolução da Forra
-            </h3>
-            <div className="h-64 w-full">
-              <ResponsiveContainer width="100%" height="100%">
-                <LineChart data={stats.chartData}>
-                  <CartesianGrid strokeDasharray="3 3" stroke="#3f3f46" vertical={false} />
-                  <XAxis 
-                    dataKey="date" 
-                    stroke="#ec4899" 
-                    tick={{fill: '#fbcfe8', fontSize: 12}}
-                    axisLine={false}
-                    tickLine={false}
-                  />
-                  <YAxis 
-                    stroke="#ec4899"
-                    tick={{fill: '#fbcfe8', fontSize: 12}}
-                    tickFormatter={(value) => `R$${value/1000}k`}
-                    axisLine={false}
-                    tickLine={false}
-                  />
-                  <Tooltip 
-                    contentStyle={{ backgroundColor: '#000', borderColor: '#ec4899', color: '#fbcfe8', borderRadius: '8px' }}
-                    formatter={(value) => [formatCurrency(value), 'Lucro do Dia']}
-                    labelStyle={{ color: '#ec4899', fontWeight: 'bold' }}
-                    cursor={{ stroke: '#ec4899', strokeWidth: 1 }}
-                  />
-                  <ReferenceLine y={0} stroke="#52525b" strokeDasharray="3 3" />
-                  <Line 
-                    type="monotone" 
-                    dataKey="profit" 
-                    stroke="#ec4899" 
-                    strokeWidth={4}
-                    dot={{ r: 6, fill: '#000', strokeWidth: 3, stroke: '#ec4899' }}
-                    activeDot={{ r: 8, fill: '#ec4899', stroke: '#fff' }}
-                  />
-                </LineChart>
-              </ResponsiveContainer>
+            
+            <div id="history-list" class="divide-y divide-pink-500/10">
+                <!-- JS Injection -->
             </div>
-          </div>
         </div>
-
-        {/* HISTÓRICO DETALHADO */}
-        <div className="bg-zinc-900 rounded-xl border border-pink-500/20 overflow-hidden shadow-lg">
-          <div className="p-4 bg-zinc-900 border-b border-pink-500/20 flex items-center justify-between">
-            <h3 className="font-bold text-lg text-pink-100 flex items-center">
-              <Calendar className="mr-2 text-pink-500" size={20} />
-              Histórico de Operações
-            </h3>
-            <span className="text-xs font-bold text-pink-500 bg-pink-500/10 px-3 py-1 rounded-full border border-pink-500/20">
-              {history.length} REGISTROS
-            </span>
-          </div>
-          
-          <div className="divide-y divide-pink-500/10">
-            {stats.chartData.slice().reverse().map((entry, index) => (
-              <div key={index} className="p-5 hover:bg-pink-500/5 transition-colors flex flex-col md:flex-row items-center justify-between gap-4 group">
-                <div className="flex items-center space-x-4 w-full md:w-auto">
-                  <div className={`p-3 rounded-xl transition-transform group-hover:scale-110 ${entry.won ? 'bg-green-500/10 text-green-500 border border-green-500/20' : 'bg-red-500/10 text-red-500 border border-red-500/20'}`}>
-                    {entry.won ? <TrendingUp size={20} /> : <TrendingDown size={20} />}
-                  </div>
-                  <div>
-                    <p className="font-bold text-pink-100 text-lg">{entry.fullDate}</p>
-                    <p className="text-xs text-pink-400/60 uppercase tracking-wider font-semibold">{entry.games}</p>
-                  </div>
-                </div>
-
-                <div className="flex items-center justify-between w-full md:w-auto gap-8">
-                  <div className="text-right">
-                    <p className="text-[10px] text-pink-400/50 uppercase font-bold">Saldo do Dia</p>
-                    <p className={`font-black font-mono text-lg ${entry.profit >= 0 ? 'text-green-400' : 'text-red-400'}`}>
-                      {entry.profit >= 0 ? '+' : ''}{formatCurrency(entry.profit)}
-                    </p>
-                  </div>
-                  <div className="text-right hidden md:block pl-6 border-l border-pink-500/10">
-                    <p className="text-[10px] text-pink-400/50 uppercase font-bold">Acumulado</p>
-                    <p className="font-medium text-pink-200 font-mono">{formatCurrency(entry.bankroll)}</p>
-                  </div>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-
-      </div>
     </div>
-  );
-};
 
-export default SurskityTracker;
+    <!-- JAVASCRIPT LOGIC -->
+    <script>
+        // --- DADOS ---
+        const historyData = [
+            {
+                id: 1,
+                date: '09/02/2026',
+                deposit: 6000,
+                withdraw: 10000,
+                games: ['Blackjack'],
+                won: true
+            }
+        ];
+
+        // --- UTILS ---
+        const formatCurrency = (value) => {
+            return new Intl.NumberFormat('pt-BR', {
+                style: 'currency',
+                currency: 'BRL'
+            }).format(value);
+        };
+
+        // --- MAIN LOGIC ---
+        function renderApp() {
+            // 1. Calcular Estatísticas
+            let totalDeposited = 0;
+            let totalWithdrawn = 0;
+            let currentBankroll = 0;
+            
+            const processedData = historyData.map(entry => {
+                const profit = entry.withdraw - entry.deposit;
+                totalDeposited += entry.deposit;
+                totalWithdrawn += entry.withdraw;
+                currentBankroll += profit;
+
+                return {
+                    ...entry,
+                    profit,
+                    bankroll: currentBankroll
+                };
+            });
+
+            const netProfit = totalWithdrawn - totalDeposited;
+            const lastEntry = processedData[processedData.length - 1];
+
+            // 2. Renderizar Status Card (Card Principal)
+            const statusCard = document.getElementById('status-card-container');
+            const lastProfitColor = lastEntry.profit >= 0 ? 'text-green-400' : 'text-red-400';
+            const lastBorderColor = lastEntry.profit >= 0 ? 'border-green-500/30' : 'border-red-500/30';
+
+            let statusIcon, statusTitle, statusMsg, statusTitleColor;
+
+            if (lastEntry.won) {
+                statusIcon = '<span class="text-6xl md:text-7xl animate-bounce filter drop-shadow-[0_0_10px_rgba(34,197,94,0.5)]">😢</span>';
+                statusTitle = 'SIM, ELE GANHOU';
+                statusMsg = 'Que dia triste para a torcida contra...';
+                statusTitleColor = 'text-green-500';
+            } else {
+                statusIcon = '<span class="text-6xl md:text-7xl animate-pulse filter drop-shadow-[0_0_10px_rgba(239,68,68,0.5)]">🤣</span>';
+                statusTitle = 'NÃO, DEU RUIM';
+                statusMsg = 'A justiça foi feita!';
+                statusTitleColor = 'text-red-500';
+            }
+
+            statusCard.innerHTML = `
+                <div class="p-8 text-center space-y-4">
+                    <h2 class="text-xl text-pink-400 font-bold uppercase tracking-widest text-shadow-sm">Status do Dia (${lastEntry.date})</h2>
+                    
+                    <div class="flex flex-col items-center justify-center space-y-2 py-4">
+                        ${statusIcon}
+                        <h3 class="text-4xl md:text-5xl font-black ${statusTitleColor} drop-shadow-lg tracking-tight">
+                            ${statusTitle}
+                        </h3>
+                        <p class="${lastEntry.won ? 'text-green-400/60' : 'text-red-400/60'} italic font-medium">${statusMsg}</p>
+                    </div>
+
+                    <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mt-8 pt-6 border-t border-pink-500/10">
+                        <div class="bg-black/40 p-3 rounded-lg border border-pink-500/10">
+                            <p class="text-[10px] text-pink-400/70 uppercase font-bold tracking-wider">Jogos</p>
+                            <p class="font-bold text-pink-100">${lastEntry.games.join(', ')}</p>
+                        </div>
+                        <div class="bg-black/40 p-3 rounded-lg border border-pink-500/10">
+                            <p class="text-[10px] text-pink-400/70 uppercase font-bold tracking-wider">Depósito</p>
+                            <p class="font-mono text-pink-100">${formatCurrency(lastEntry.deposit)}</p>
+                        </div>
+                        <div class="bg-black/40 p-3 rounded-lg border border-pink-500/10">
+                            <p class="text-[10px] text-pink-400/70 uppercase font-bold tracking-wider">Saque</p>
+                            <p class="font-mono text-pink-100">${formatCurrency(lastEntry.withdraw)}</p>
+                        </div>
+                        <div class="bg-black/40 p-3 rounded-lg border ${lastBorderColor}">
+                            <p class="text-[10px] text-pink-400/70 uppercase font-bold tracking-wider">Resultado</p>
+                            <p class="font-black font-mono ${lastProfitColor}">
+                                ${lastEntry.profit >= 0 ? '+' : ''}${formatCurrency(lastEntry.profit)}
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            `;
+
+            // 3. Renderizar Resumo da Banca
+            const netProfitEl = document.getElementById('total-net-profit');
+            netProfitEl.innerHTML = `${netProfit >= 0 ? '+' : ''}${formatCurrency(netProfit)}`;
+            netProfitEl.className = `text-3xl font-black font-mono mt-1 ${netProfit >= 0 ? 'text-green-400' : 'text-red-400'}`;
+
+            document.getElementById('total-withdrawn').innerText = formatCurrency(totalWithdrawn);
+
+            // 4. Renderizar Lista de Histórico
+            const historyContainer = document.getElementById('history-list');
+            document.getElementById('history-count').innerText = `${historyData.length} REGISTROS`;
+            
+            historyContainer.innerHTML = ''; // Limpar
+            
+            // Reverter para mostrar mais recente primeiro
+            [...processedData].reverse().forEach(entry => {
+                const profitColor = entry.profit >= 0 ? 'text-green-400' : 'text-red-400';
+                const iconBg = entry.won ? 'bg-green-500/10 text-green-500 border-green-500/20' : 'bg-red-500/10 text-red-500 border-red-500/20';
+                const iconName = entry.won ? 'trending-up' : 'trending-down';
+
+                const html = `
+                    <div class="p-5 hover:bg-pink-500/5 transition-colors flex flex-col md:flex-row items-center justify-between gap-4 group">
+                        <div class="flex items-center space-x-4 w-full md:w-auto">
+                            <div class="p-3 rounded-xl transition-transform group-hover:scale-110 border ${iconBg}">
+                                <i data-lucide="${iconName}" size="20"></i>
+                            </div>
+                            <div>
+                                <p class="font-bold text-pink-100 text-lg">${entry.date}</p>
+                                <p class="text-xs text-pink-400/60 uppercase tracking-wider font-semibold">${entry.games.join(', ')}</p>
+                            </div>
+                        </div>
+
+                        <div class="flex items-center justify-between w-full md:w-auto gap-8">
+                            <div class="text-right">
+                                <p class="text-[10px] text-pink-400/50 uppercase font-bold">Saldo do Dia</p>
+                                <p class="font-black font-mono text-lg ${profitColor}">
+                                    ${entry.profit >= 0 ? '+' : ''}${formatCurrency(entry.profit)}
+                                </p>
+                            </div>
+                            <div class="text-right hidden md:block pl-6 border-l border-pink-500/10">
+                                <p class="text-[10px] text-pink-400/50 uppercase font-bold">Acumulado</p>
+                                <p class="font-medium text-pink-200 font-mono">${formatCurrency(entry.bankroll)}</p>
+                            </div>
+                        </div>
+                    </div>
+                `;
+                historyContainer.insertAdjacentHTML('beforeend', html);
+            });
+
+            // 5. Renderizar Gráfico
+            renderChart(processedData);
+
+            // 6. Refresh Icons
+            lucide.createIcons();
+        }
+
+        let chartInstance = null;
+
+        function renderChart(data) {
+            const ctx = document.getElementById('profitChart').getContext('2d');
+            
+            if (chartInstance) {
+                chartInstance.destroy();
+            }
+
+            const labels = data.map(d => d.date.slice(0, 5)); // DD/MM
+            const profits = data.map(d => d.profit);
+
+            chartInstance = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: 'Lucro do Dia',
+                        data: profits,
+                        borderColor: '#ec4899', // Pink-500
+                        backgroundColor: '#ec4899',
+                        borderWidth: 4,
+                        pointBackgroundColor: '#000',
+                        pointBorderColor: '#ec4899',
+                        pointBorderWidth: 3,
+                        pointRadius: 6,
+                        pointHoverRadius: 8,
+                        tension: 0.4
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            display: false
+                        },
+                        tooltip: {
+                            backgroundColor: '#000',
+                            titleColor: '#ec4899',
+                            bodyColor: '#fbcfe8',
+                            borderColor: '#ec4899',
+                            borderWidth: 1,
+                            padding: 12,
+                            displayColors: false,
+                            callbacks: {
+                                label: function(context) {
+                                    return formatCurrency(context.raw);
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        x: {
+                            grid: {
+                                display: false,
+                                drawBorder: false
+                            },
+                            ticks: {
+                                color: '#fbcfe8',
+                                font: {
+                                    size: 12
+                                }
+                            }
+                        },
+                        y: {
+                            grid: {
+                                color: '#3f3f46', // Zinc-700
+                                borderDash: [5, 5]
+                            },
+                            border: {
+                                display: false
+                            },
+                            ticks: {
+                                color: '#fbcfe8',
+                                callback: function(value) {
+                                    return 'R$' + (value / 1000) + 'k';
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        // Init
+        document.addEventListener('DOMContentLoaded', renderApp);
+
+    </script>
+</body>
+</html>
