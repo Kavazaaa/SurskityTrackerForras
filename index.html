@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Surskity Tracker</title>
+    <title>Surskity Tracker Premium</title>
     
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
@@ -15,35 +15,68 @@
     <script src="https://unpkg.com/lucide@latest"></script>
 
     <!-- Google Fonts -->
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700;900&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;900&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
 
     <style>
         body {
             font-family: 'Inter', sans-serif;
-            background-color: #000;
+            background-color: #09090b; /* Zinc 950 */
         }
         .font-mono {
             font-family: 'JetBrains Mono', monospace;
         }
+        
         /* Custom Scrollbar */
         ::-webkit-scrollbar {
-            width: 8px;
+            width: 6px;
         }
         ::-webkit-scrollbar-track {
-            background: #18181b; 
+            background: #09090b; 
         }
         ::-webkit-scrollbar-thumb {
-            background: #ec4899; 
-            border-radius: 4px;
+            background: #3f3f46; 
+            border-radius: 3px;
         }
         ::-webkit-scrollbar-thumb:hover {
-            background: #db2777; 
+            background: #ec4899; 
         }
-        .text-shadow-sm {
-            text-shadow: 0 1px 2px rgba(0,0,0,0.5);
+
+        /* Glassmorphism & Effects */
+        .glass-panel {
+            background: rgba(24, 24, 27, 0.7);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.05);
         }
-        .glow-pink {
-            box-shadow: 0 0 15px rgba(236,72,153,0.1);
+        .premium-shadow {
+            box-shadow: 0 4px 20px -2px rgba(0, 0, 0, 0.5);
+        }
+        .glow-text {
+            text-shadow: 0 0 20px rgba(236, 72, 153, 0.3);
+        }
+        
+        /* Transitions */
+        .fade-in {
+            animation: fadeIn 0.3s ease-in-out;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(5px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Tab Active State */
+        .tab-active {
+            background-color: #ec4899;
+            color: white;
+            border-color: #ec4899;
+        }
+        .tab-inactive {
+            background-color: transparent;
+            color: #a1a1aa;
+            border-color: #27272a;
+        }
+        .tab-inactive:hover {
+            border-color: #ec4899;
+            color: #fbcfe8;
         }
     </style>
     
@@ -53,8 +86,9 @@
                 extend: {
                     colors: {
                         zinc: {
+                            850: '#1f1f22',
                             900: '#18181b',
-                            800: '#27272a',
+                            950: '#09090b',
                         }
                     }
                 }
@@ -62,82 +96,41 @@
         }
     </script>
 </head>
-<body class="text-pink-50 min-h-screen p-4 md:p-8 selection:bg-pink-500 selection:text-white">
+<body class="text-zinc-200 min-h-screen selection:bg-pink-500 selection:text-white pb-12">
 
-    <div class="max-w-4xl mx-auto space-y-6">
+    <div class="max-w-5xl mx-auto px-4 py-8 space-y-8">
         
         <!-- HEADER -->
-        <header class="text-center space-y-2 mb-8">
-            <h1 class="text-4xl md:text-6xl font-black text-transparent bg-clip-text bg-gradient-to-r from-pink-500 via-fuchsia-500 to-pink-500 drop-shadow-sm">
-                Surskity Ganhou Hoje?
-            </h1>
-            <p class="text-pink-300/60 text-sm md:text-base tracking-widest uppercase">
-                Monitoramento oficial da banca hipotética
+        <header class="text-center space-y-4 pt-4">
+            <div class="inline-block relative">
+                <div class="absolute inset-0 blur-xl bg-pink-500/20 rounded-full"></div>
+                <h1 class="relative text-5xl md:text-7xl font-black text-white tracking-tight glow-text">
+                    SURSKITY
+                    <span class="text-transparent bg-clip-text bg-gradient-to-r from-pink-500 to-rose-600">TRACKER</span>
+                </h1>
+            </div>
+            <p class="text-zinc-500 text-sm font-medium tracking-[0.2em] uppercase">
+                Monitoramento de Performance High-Stakes
             </p>
         </header>
 
-        <!-- STATUS CARD (MAIN) -->
-        <div id="status-card-container" class="bg-zinc-900 rounded-2xl border border-pink-500/20 glow-pink overflow-hidden relative">
-            <div class="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-pink-600 via-fuchsia-600 to-pink-600"></div>
-            <!-- Content will be injected by JS -->
+        <!-- NAVIGATION TABS -->
+        <div class="flex justify-center space-x-4 mb-8">
+            <button onclick="switchTab('overview')" id="tab-overview" class="px-6 py-2 rounded-full border transition-all duration-300 font-medium text-sm flex items-center gap-2 tab-active">
+                <i data-lucide="layout-dashboard" size="16"></i>
+                Visão Geral
+            </button>
+            <button onclick="switchTab('calendar')" id="tab-calendar" class="px-6 py-2 rounded-full border transition-all duration-300 font-medium text-sm flex items-center gap-2 tab-inactive">
+                <i data-lucide="calendar" size="16"></i>
+                Calendário
+            </button>
         </div>
 
-        <!-- DASHBOARD GRID -->
-        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-            
-            <!-- STATS COLUMN -->
-            <div class="lg:col-span-1 space-y-4">
-                <div class="bg-zinc-900 p-6 rounded-xl border border-pink-500/20 shadow-lg h-full">
-                    <div class="flex items-center space-x-2 mb-4 text-pink-500">
-                        <i data-lucide="activity" size="20"></i>
-                        <h3 class="font-bold text-lg text-pink-100">Resumo da Banca</h3>
-                    </div>
-                    
-                    <div class="space-y-6">
-                        <div>
-                            <p class="text-xs text-pink-400/60 uppercase font-bold tracking-wider">Lucro Líquido Total</p>
-                            <p id="total-net-profit" class="text-3xl font-black font-mono mt-1">
-                                <!-- JS Injection -->
-                            </p>
-                        </div>
-                        <div class="pt-4 border-t border-pink-500/10">
-                            <p class="text-xs text-pink-400/60 uppercase font-bold tracking-wider">Saque Total</p>
-                            <p id="total-withdrawn" class="text-xl font-bold text-pink-100 font-mono mt-1">
-                                <!-- JS Injection -->
-                            </p>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- CHART COLUMN -->
-            <div class="lg:col-span-2 bg-zinc-900 p-6 rounded-xl border border-pink-500/20 shadow-lg min-h-[300px]">
-                <h3 class="font-bold text-lg text-pink-100 mb-6 flex items-center">
-                    <i data-lucide="trending-up" class="mr-2 text-pink-500"></i>
-                    Evolução da Forra
-                </h3>
-                <div class="h-64 w-full relative">
-                    <canvas id="profitChart"></canvas>
-                </div>
-            </div>
+        <!-- CONTENT AREA -->
+        <div id="content-area" class="fade-in">
+            <!-- Content Injected by JS -->
         </div>
 
-        <!-- HISTORY LIST -->
-        <div class="bg-zinc-900 rounded-xl border border-pink-500/20 overflow-hidden shadow-lg">
-            <div class="p-4 bg-zinc-900 border-b border-pink-500/20 flex items-center justify-between">
-                <h3 class="font-bold text-lg text-pink-100 flex items-center">
-                    <i data-lucide="calendar" class="mr-2 text-pink-500"></i>
-                    Histórico de Operações
-                </h3>
-                <span id="history-count" class="text-xs font-bold text-pink-500 bg-pink-500/10 px-3 py-1 rounded-full border border-pink-500/20">
-                    0 REGISTROS
-                </span>
-            </div>
-            
-            <div id="history-list" class="divide-y divide-pink-500/10">
-                <!-- JS Injection -->
-            </div>
-        </div>
     </div>
 
     <!-- JAVASCRIPT LOGIC -->
@@ -148,11 +141,25 @@
                 id: 1,
                 date: '09/02/2026',
                 deposit: 6000,
-                withdraw: 10000,
+                withdraw: 11442,
                 games: ['Blackjack'],
+                houses: ['Casa de Apostas'],
                 won: true
+            },
+            {
+                id: 2,
+                date: '10/02/2026',
+                deposit: 1000,
+                withdraw: 0, // Ainda jogando / Sem saque registrado
+                games: ['Slots'],
+                houses: ['Casa de Apostas'],
+                won: false
             }
         ];
+
+        // --- STATE ---
+        let currentTab = 'overview';
+        let selectedDate = null;
 
         // --- UTILS ---
         const formatCurrency = (value) => {
@@ -162,165 +169,325 @@
             }).format(value);
         };
 
-        // --- MAIN LOGIC ---
-        function renderApp() {
-            // 1. Calcular Estatísticas
+        const getStats = () => {
             let totalDeposited = 0;
             let totalWithdrawn = 0;
             let currentBankroll = 0;
             
-            const processedData = historyData.map(entry => {
+            const processed = historyData.map(entry => {
                 const profit = entry.withdraw - entry.deposit;
                 totalDeposited += entry.deposit;
                 totalWithdrawn += entry.withdraw;
                 currentBankroll += profit;
-
-                return {
-                    ...entry,
-                    profit,
-                    bankroll: currentBankroll
-                };
+                return { ...entry, profit, bankroll: currentBankroll };
             });
 
-            const netProfit = totalWithdrawn - totalDeposited;
-            const lastEntry = processedData[processedData.length - 1];
+            // Coletar casas únicas
+            const allHouses = [...new Set(historyData.flatMap(d => d.houses || []))];
 
-            // 2. Renderizar Status Card (Card Principal)
-            const statusCard = document.getElementById('status-card-container');
-            const lastProfitColor = lastEntry.profit >= 0 ? 'text-green-400' : 'text-red-400';
-            const lastBorderColor = lastEntry.profit >= 0 ? 'border-green-500/30' : 'border-red-500/30';
+            return {
+                processed,
+                netProfit: totalWithdrawn - totalDeposited,
+                totalWithdrawn,
+                lastEntry: processed[processed.length - 1],
+                allHouses
+            };
+        };
 
-            let statusIcon, statusTitle, statusMsg, statusTitleColor;
+        // --- RENDER FUNCTIONS ---
 
-            if (lastEntry.won) {
-                statusIcon = '<span class="text-6xl md:text-7xl animate-bounce filter drop-shadow-[0_0_10px_rgba(34,197,94,0.5)]">😢</span>';
-                statusTitle = 'SIM, ELE GANHOU';
-                statusMsg = 'Que dia triste para a torcida contra...';
-                statusTitleColor = 'text-green-500';
+        function switchTab(tab) {
+            currentTab = tab;
+            
+            // Update Buttons
+            document.getElementById('tab-overview').className = `px-6 py-2 rounded-full border transition-all duration-300 font-medium text-sm flex items-center gap-2 ${tab === 'overview' ? 'tab-active' : 'tab-inactive'}`;
+            document.getElementById('tab-calendar').className = `px-6 py-2 rounded-full border transition-all duration-300 font-medium text-sm flex items-center gap-2 ${tab === 'calendar' ? 'tab-active' : 'tab-inactive'}`;
+            
+            // Render Content
+            const container = document.getElementById('content-area');
+            container.innerHTML = '';
+            
+            if (tab === 'overview') {
+                renderOverview(container);
             } else {
-                statusIcon = '<span class="text-6xl md:text-7xl animate-pulse filter drop-shadow-[0_0_10px_rgba(239,68,68,0.5)]">🤣</span>';
-                statusTitle = 'NÃO, DEU RUIM';
-                statusMsg = 'A justiça foi feita!';
-                statusTitleColor = 'text-red-500';
+                renderCalendar(container);
             }
+            lucide.createIcons();
+        }
 
-            statusCard.innerHTML = `
-                <div class="p-8 text-center space-y-4">
-                    <h2 class="text-xl text-pink-400 font-bold uppercase tracking-widest text-shadow-sm">Status do Dia (${lastEntry.date})</h2>
+        function renderOverview(container) {
+            const stats = getStats();
+            const lastEntry = stats.lastEntry;
+            
+            // Determine styles for the main status card
+            const isWin = lastEntry.won;
+            const statusColor = isWin ? 'text-emerald-400' : 'text-rose-400';
+            const statusBg = isWin ? 'from-emerald-500/10 to-emerald-500/5 border-emerald-500/20' : 'from-rose-500/10 to-rose-500/5 border-rose-500/20';
+            const emoji = isWin ? '😢' : '🤣';
+            const title = isWin ? 'SIM, ELE GANHOU' : 'NÃO, DEU RUIM';
+            const subtitle = isWin ? 'Infelizmente o homem forrou.' : 'A casa sempre vence.';
+
+            // Generate Houses HTML
+            const housesHtml = stats.allHouses.map(h => 
+                `<span class="px-2 py-1 bg-zinc-800 border border-zinc-700 rounded text-xs text-zinc-400">${h}</span>`
+            ).join('');
+
+            const html = `
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 animate-fade-in">
                     
-                    <div class="flex flex-col items-center justify-center space-y-2 py-4">
-                        ${statusIcon}
-                        <h3 class="text-4xl md:text-5xl font-black ${statusTitleColor} drop-shadow-lg tracking-tight">
-                            ${statusTitle}
-                        </h3>
-                        <p class="${lastEntry.won ? 'text-green-400/60' : 'text-red-400/60'} italic font-medium">${statusMsg}</p>
+                    <!-- LATEST STATUS CARD -->
+                    <div class="lg:col-span-3 bg-gradient-to-b ${statusBg} bg-zinc-900/50 rounded-2xl border backdrop-blur-sm p-8 relative overflow-hidden group">
+                        <div class="absolute top-0 right-0 p-8 opacity-10 group-hover:opacity-20 transition-opacity text-9xl select-none grayscale">
+                            ${isWin ? '📈' : '📉'}
+                        </div>
+                        
+                        <div class="relative z-10 flex flex-col md:flex-row items-center justify-between gap-8">
+                            <div class="text-center md:text-left space-y-2">
+                                <div class="flex items-center justify-center md:justify-start gap-2 mb-2">
+                                    <span class="px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider bg-black/40 border border-white/10 text-zinc-400">
+                                        Última Atualização: ${lastEntry.date}
+                                    </span>
+                                </div>
+                                <h2 class="text-4xl md:text-5xl font-black italic tracking-tighter text-white">
+                                    ${title} <span class="not-italic text-4xl align-middle ml-2">${emoji}</span>
+                                </h2>
+                                <p class="${statusColor} font-medium text-lg">${subtitle}</p>
+                            </div>
+
+                            <div class="flex flex-col gap-1 text-right">
+                                <span class="text-xs font-bold uppercase tracking-widest text-zinc-500">Resultado do Dia</span>
+                                <span class="text-4xl md:text-5xl font-mono font-bold ${statusColor}">
+                                    ${lastEntry.profit > 0 ? '+' : ''}${formatCurrency(lastEntry.profit)}
+                                </span>
+                                <div class="flex items-center justify-end gap-2 mt-2">
+                                    <span class="text-xs text-zinc-500">Jogos:</span>
+                                    <span class="text-xs text-zinc-300 font-medium">${lastEntry.games.join(', ')}</span>
+                                </div>
+                            </div>
+                        </div>
                     </div>
 
-                    <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mt-8 pt-6 border-t border-pink-500/10">
-                        <div class="bg-black/40 p-3 rounded-lg border border-pink-500/10">
-                            <p class="text-[10px] text-pink-400/70 uppercase font-bold tracking-wider">Jogos</p>
-                            <p class="font-bold text-pink-100">${lastEntry.games.join(', ')}</p>
+                    <!-- STATS & HOUSES -->
+                    <div class="lg:col-span-1 space-y-6">
+                        <!-- Total Profit -->
+                        <div class="bg-zinc-900 border border-zinc-800 p-6 rounded-xl hover:border-pink-500/30 transition-colors">
+                            <div class="flex items-center justify-between mb-4">
+                                <span class="text-sm font-medium text-zinc-400">Lucro Líquido Total</span>
+                                <i data-lucide="wallet" class="text-pink-500" size="20"></i>
+                            </div>
+                            <div class="text-3xl font-mono font-bold ${stats.netProfit >= 0 ? 'text-white' : 'text-rose-500'}">
+                                ${stats.netProfit >= 0 ? '+' : ''}${formatCurrency(stats.netProfit)}
+                            </div>
+                            <div class="mt-4 pt-4 border-t border-zinc-800 flex justify-between items-center text-sm">
+                                <span class="text-zinc-500">Total Sacado</span>
+                                <span class="text-zinc-300 font-mono">${formatCurrency(stats.totalWithdrawn)}</span>
+                            </div>
                         </div>
-                        <div class="bg-black/40 p-3 rounded-lg border border-pink-500/10">
-                            <p class="text-[10px] text-pink-400/70 uppercase font-bold tracking-wider">Depósito</p>
-                            <p class="font-mono text-pink-100">${formatCurrency(lastEntry.deposit)}</p>
+
+                        <!-- Houses List -->
+                        <div class="bg-zinc-900 border border-zinc-800 p-6 rounded-xl">
+                            <div class="flex items-center gap-2 mb-4 text-zinc-400">
+                                <i data-lucide="building-2" size="16"></i>
+                                <span class="text-sm font-bold uppercase tracking-wider">Casas Forradas</span>
+                            </div>
+                            <div class="flex flex-wrap gap-2">
+                                ${housesHtml || '<span class="text-zinc-600 text-sm italic">Nenhuma casa registrada</span>'}
+                            </div>
                         </div>
-                        <div class="bg-black/40 p-3 rounded-lg border border-pink-500/10">
-                            <p class="text-[10px] text-pink-400/70 uppercase font-bold tracking-wider">Saque</p>
-                            <p class="font-mono text-pink-100">${formatCurrency(lastEntry.withdraw)}</p>
+                    </div>
+
+                    <!-- CHART -->
+                    <div class="lg:col-span-2 bg-zinc-900 border border-zinc-800 p-6 rounded-xl">
+                        <div class="flex items-center justify-between mb-6">
+                            <h3 class="font-bold text-lg text-white flex items-center gap-2">
+                                <i data-lucide="trending-up" class="text-pink-500"></i>
+                                Evolução da Banca Total
+                            </h3>
                         </div>
-                        <div class="bg-black/40 p-3 rounded-lg border ${lastBorderColor}">
-                            <p class="text-[10px] text-pink-400/70 uppercase font-bold tracking-wider">Resultado</p>
-                            <p class="font-black font-mono ${lastProfitColor}">
-                                ${lastEntry.profit >= 0 ? '+' : ''}${formatCurrency(lastEntry.profit)}
-                            </p>
+                        <div class="h-64 w-full relative">
+                            <canvas id="profitChart"></canvas>
+                        </div>
+                    </div>
+
+                </div>
+            `;
+            
+            container.innerHTML = html;
+            renderChart(stats.processed);
+        }
+
+        function renderCalendar(container) {
+            const stats = getStats();
+            
+            // Setup Feb 2026
+            const year = 2026;
+            const month = 1; // 0-indexed, 1 = Feb
+            const daysInMonth = new Date(year, month + 1, 0).getDate();
+            const firstDayIndex = new Date(year, month, 1).getDay(); // Sunday = 0
+            
+            let daysHtml = '';
+
+            // Empty slots for previous month
+            for (let i = 0; i < firstDayIndex; i++) {
+                daysHtml += `<div class="aspect-square bg-zinc-900/30 rounded-lg"></div>`;
+            }
+
+            // Days
+            for (let day = 1; day <= daysInMonth; day++) {
+                const dateStr = `${day.toString().padStart(2, '0')}/02/${year}`;
+                const entry = stats.processed.find(d => d.date === dateStr);
+                
+                let content = `<span class="text-zinc-500 text-sm">${day}</span>`;
+                let classes = "bg-zinc-900 border border-zinc-800 text-zinc-400 hover:border-zinc-600 cursor-pointer";
+                let onClick = "";
+
+                if (entry) {
+                    const isWin = entry.profit >= 0;
+                    const colorClass = isWin ? 'bg-emerald-500' : 'bg-rose-500';
+                    const textClass = isWin ? 'text-emerald-400' : 'text-rose-400';
+                    
+                    classes = `bg-zinc-800 border ${isWin ? 'border-emerald-500/30' : 'border-rose-500/30'} cursor-pointer hover:bg-zinc-800/80 transition-all`;
+                    
+                    content = `
+                        <div class="flex flex-col h-full justify-between">
+                            <span class="${textClass} font-bold text-sm">${day}</span>
+                            <div class="flex flex-col items-end">
+                                <div class="w-1.5 h-1.5 rounded-full ${colorClass} mb-1"></div>
+                                <span class="text-[10px] font-mono text-zinc-300">
+                                    ${entry.profit > 0 ? '+' : ''}${formatCurrency(entry.profit).split(',')[0].replace('R$', '')}
+                                </span>
+                            </div>
+                        </div>
+                    `;
+                    onClick = `showDayDetails('${dateStr}')`;
+                }
+
+                daysHtml += `
+                    <div onclick="${onClick}" class="aspect-square rounded-xl p-2 md:p-3 relative group ${classes}">
+                        ${content}
+                    </div>
+                `;
+            }
+
+            const html = `
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6 animate-fade-in">
+                    <!-- Calendar Grid -->
+                    <div class="md:col-span-2 bg-zinc-900 border border-zinc-800 p-6 rounded-2xl">
+                        <div class="flex justify-between items-center mb-6">
+                            <h2 class="text-xl font-bold text-white flex items-center gap-2">
+                                <i data-lucide="calendar-days" class="text-pink-500"></i>
+                                Fevereiro 2026
+                            </h2>
+                            <div class="flex gap-2 text-xs">
+                                <span class="flex items-center gap-1 text-zinc-400"><div class="w-2 h-2 rounded-full bg-emerald-500"></div> Gain</span>
+                                <span class="flex items-center gap-1 text-zinc-400"><div class="w-2 h-2 rounded-full bg-rose-500"></div> Loss</span>
+                            </div>
+                        </div>
+                        
+                        <div class="grid grid-cols-7 gap-2 md:gap-4 mb-2 text-center text-xs font-bold text-zinc-500 uppercase tracking-wider">
+                            <div>Dom</div><div>Seg</div><div>Ter</div><div>Qua</div><div>Qui</div><div>Sex</div><div>Sab</div>
+                        </div>
+                        <div class="grid grid-cols-7 gap-2 md:gap-4">
+                            ${daysHtml}
+                        </div>
+                    </div>
+
+                    <!-- Side Panel: Day Details -->
+                    <div class="md:col-span-1">
+                        <div id="day-details-panel" class="h-full bg-zinc-900 border border-zinc-800 p-6 rounded-2xl flex items-center justify-center text-center">
+                            <div class="space-y-3 text-zinc-500">
+                                <i data-lucide="mouse-pointer-click" class="mx-auto mb-2 opacity-50" size="32"></i>
+                                <p class="text-sm">Clique em um dia com atividade para ver os detalhes da cassinagem.</p>
+                            </div>
                         </div>
                     </div>
                 </div>
             `;
+            container.innerHTML = html;
+        }
 
-            // 3. Renderizar Resumo da Banca
-            const netProfitEl = document.getElementById('total-net-profit');
-            netProfitEl.innerHTML = `${netProfit >= 0 ? '+' : ''}${formatCurrency(netProfit)}`;
-            netProfitEl.className = `text-3xl font-black font-mono mt-1 ${netProfit >= 0 ? 'text-green-400' : 'text-red-400'}`;
+        window.showDayDetails = (dateStr) => {
+            const stats = getStats();
+            const entry = stats.processed.find(d => d.date === dateStr);
+            const panel = document.getElementById('day-details-panel');
 
-            document.getElementById('total-withdrawn').innerText = formatCurrency(totalWithdrawn);
+            if (!entry) return;
 
-            // 4. Renderizar Lista de Histórico
-            const historyContainer = document.getElementById('history-list');
-            document.getElementById('history-count').innerText = `${historyData.length} REGISTROS`;
-            
-            historyContainer.innerHTML = ''; // Limpar
-            
-            // Reverter para mostrar mais recente primeiro
-            [...processedData].reverse().forEach(entry => {
-                const profitColor = entry.profit >= 0 ? 'text-green-400' : 'text-red-400';
-                const iconBg = entry.won ? 'bg-green-500/10 text-green-500 border-green-500/20' : 'bg-red-500/10 text-red-500 border-red-500/20';
-                const iconName = entry.won ? 'trending-up' : 'trending-down';
+            const isWin = entry.profit >= 0;
+            const color = isWin ? 'emerald' : 'rose';
 
-                const html = `
-                    <div class="p-5 hover:bg-pink-500/5 transition-colors flex flex-col md:flex-row items-center justify-between gap-4 group">
-                        <div class="flex items-center space-x-4 w-full md:w-auto">
-                            <div class="p-3 rounded-xl transition-transform group-hover:scale-110 border ${iconBg}">
-                                <i data-lucide="${iconName}" size="20"></i>
+            panel.innerHTML = `
+                <div class="w-full h-full flex flex-col justify-start text-left space-y-6 animate-fade-in">
+                    <div class="border-b border-zinc-800 pb-4">
+                        <span class="text-xs font-bold text-zinc-500 uppercase tracking-wider">Detalhes do Dia</span>
+                        <h3 class="text-2xl font-black text-white mt-1">${entry.date}</h3>
+                    </div>
+
+                    <div class="space-y-4">
+                        <div class="bg-black/20 p-4 rounded-lg border border-zinc-800">
+                            <p class="text-xs text-zinc-500 uppercase font-bold">Resultado</p>
+                            <p class="text-2xl font-mono font-bold text-${color}-400">
+                                ${entry.profit > 0 ? '+' : ''}${formatCurrency(entry.profit)}
+                            </p>
+                        </div>
+
+                        <div class="grid grid-cols-2 gap-4">
+                            <div class="bg-zinc-800/50 p-3 rounded-lg">
+                                <p class="text-[10px] text-zinc-500 uppercase">Sacou</p>
+                                <p class="font-mono text-zinc-200 text-sm">${formatCurrency(entry.withdraw)}</p>
                             </div>
-                            <div>
-                                <p class="font-bold text-pink-100 text-lg">${entry.date}</p>
-                                <p class="text-xs text-pink-400/60 uppercase tracking-wider font-semibold">${entry.games.join(', ')}</p>
+                            <div class="bg-zinc-800/50 p-3 rounded-lg">
+                                <p class="text-[10px] text-zinc-500 uppercase">Depositou</p>
+                                <p class="font-mono text-zinc-200 text-sm">${formatCurrency(entry.deposit)}</p>
                             </div>
                         </div>
 
-                        <div class="flex items-center justify-between w-full md:w-auto gap-8">
-                            <div class="text-right">
-                                <p class="text-[10px] text-pink-400/50 uppercase font-bold">Saldo do Dia</p>
-                                <p class="font-black font-mono text-lg ${profitColor}">
-                                    ${entry.profit >= 0 ? '+' : ''}${formatCurrency(entry.profit)}
-                                </p>
-                            </div>
-                            <div class="text-right hidden md:block pl-6 border-l border-pink-500/10">
-                                <p class="text-[10px] text-pink-400/50 uppercase font-bold">Acumulado</p>
-                                <p class="font-medium text-pink-200 font-mono">${formatCurrency(entry.bankroll)}</p>
+                        <div>
+                            <p class="text-xs text-zinc-500 uppercase font-bold mb-2">Casas & Jogos</p>
+                            <div class="flex flex-wrap gap-2">
+                                ${(entry.houses || []).map(h => `<span class="px-2 py-1 bg-pink-500/10 text-pink-400 border border-pink-500/20 rounded text-xs">${h}</span>`).join('')}
+                                ${entry.games.map(g => `<span class="px-2 py-1 bg-zinc-800 text-zinc-400 border border-zinc-700 rounded text-xs">${g}</span>`).join('')}
                             </div>
                         </div>
                     </div>
-                `;
-                historyContainer.insertAdjacentHTML('beforeend', html);
-            });
-
-            // 5. Renderizar Gráfico
-            renderChart(processedData);
-
-            // 6. Refresh Icons
-            lucide.createIcons();
+                </div>
+            `;
         }
 
         let chartInstance = null;
 
         function renderChart(data) {
-            const ctx = document.getElementById('profitChart').getContext('2d');
+            const ctx = document.getElementById('profitChart');
+            if(!ctx) return;
             
             if (chartInstance) {
                 chartInstance.destroy();
             }
 
-            const labels = data.map(d => d.date.slice(0, 5)); // DD/MM
-            const profits = data.map(d => d.profit);
+            const labels = data.map(d => d.date.slice(0, 5));
+            const bankrolls = data.map(d => d.bankroll);
 
-            chartInstance = new Chart(ctx, {
+            chartInstance = new Chart(ctx.getContext('2d'), {
                 type: 'line',
                 data: {
                     labels: labels,
                     datasets: [{
-                        label: 'Lucro do Dia',
-                        data: profits,
-                        borderColor: '#ec4899', // Pink-500
-                        backgroundColor: '#ec4899',
-                        borderWidth: 4,
-                        pointBackgroundColor: '#000',
+                        label: 'Banca Total',
+                        data: bankrolls,
+                        borderColor: '#ec4899',
+                        backgroundColor: (context) => {
+                            const ctx = context.chart.ctx;
+                            const gradient = ctx.createLinearGradient(0, 0, 0, 300);
+                            gradient.addColorStop(0, 'rgba(236, 72, 153, 0.2)');
+                            gradient.addColorStop(1, 'rgba(236, 72, 153, 0)');
+                            return gradient;
+                        },
+                        borderWidth: 3,
+                        fill: true,
+                        pointBackgroundColor: '#09090b',
                         pointBorderColor: '#ec4899',
-                        pointBorderWidth: 3,
+                        pointBorderWidth: 2,
                         pointRadius: 6,
-                        pointHoverRadius: 8,
                         tension: 0.4
                     }]
                 },
@@ -328,14 +495,12 @@
                     responsive: true,
                     maintainAspectRatio: false,
                     plugins: {
-                        legend: {
-                            display: false
-                        },
+                        legend: { display: false },
                         tooltip: {
-                            backgroundColor: '#000',
+                            backgroundColor: '#18181b',
                             titleColor: '#ec4899',
-                            bodyColor: '#fbcfe8',
-                            borderColor: '#ec4899',
+                            bodyColor: '#fff',
+                            borderColor: '#3f3f46',
                             borderWidth: 1,
                             padding: 12,
                             displayColors: false,
@@ -348,30 +513,16 @@
                     },
                     scales: {
                         x: {
-                            grid: {
-                                display: false,
-                                drawBorder: false
-                            },
-                            ticks: {
-                                color: '#fbcfe8',
-                                font: {
-                                    size: 12
-                                }
-                            }
+                            grid: { display: false },
+                            ticks: { color: '#71717a', font: { family: 'Inter', size: 11 } }
                         },
                         y: {
-                            grid: {
-                                color: '#3f3f46', // Zinc-700
-                                borderDash: [5, 5]
-                            },
-                            border: {
-                                display: false
-                            },
+                            grid: { color: '#27272a', borderDash: [5, 5] },
+                            border: { display: false },
                             ticks: {
-                                color: '#fbcfe8',
-                                callback: function(value) {
-                                    return 'R$' + (value / 1000) + 'k';
-                                }
+                                color: '#71717a',
+                                font: { family: 'JetBrains Mono', size: 10 },
+                                callback: function(value) { return 'R$' + (value / 1000) + 'k'; }
                             }
                         }
                     }
@@ -380,7 +531,9 @@
         }
 
         // Init
-        document.addEventListener('DOMContentLoaded', renderApp);
+        document.addEventListener('DOMContentLoaded', () => {
+            switchTab('overview');
+        });
 
     </script>
 </body>
