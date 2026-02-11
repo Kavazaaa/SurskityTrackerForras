@@ -190,21 +190,24 @@
 
         const getStats = () => {
             let totalDeposited = 0;
-            let totalWithdrawn = 0;
+            let totalRealWithdrawn = 0; // Usar o saque REAL para cálculos de lucro
             let currentBankroll = 0;
-            let customSaldo = 0; // Novo cálculo de Saldo
+            let customSaldo = 0; 
             
             const processed = historyData.map(entry => {
-                const profit = entry.withdraw - entry.deposit;
+                // Lógica Atualizada: O Pix do chat é descontado do saque antes de calcular o lucro
+                const giveaway = entry.giveaway || 0;
+                const realWithdraw = entry.withdraw - giveaway;
+                const profit = realWithdraw - entry.deposit;
+
                 totalDeposited += entry.deposit;
-                totalWithdrawn += entry.withdraw;
+                totalRealWithdrawn += realWithdraw;
                 currentBankroll += profit;
                 
                 // Lógica do Saldo: 
-                // Se ganhou: Soma o saque bruto MENOS o que ele deu pro chat (Se houver giveaway)
+                // Se ganhou: Soma o saque REAL (já descontado o giveaway)
                 // Se perdeu: Subtrai o depósito
                 if (entry.won) {
-                    const realWithdraw = entry.withdraw - (entry.giveaway || 0);
                     customSaldo += realWithdraw;
                 } else {
                     customSaldo -= entry.deposit;
@@ -218,9 +221,8 @@
 
             return {
                 processed,
-                netProfit: totalWithdrawn - totalDeposited,
-                totalWithdrawn,
-                customSaldo, // Retorna o saldo calculado
+                netProfit: totalRealWithdrawn - totalDeposited,
+                customSaldo, 
                 lastEntry: processed[processed.length - 1],
                 allHouses
             };
@@ -252,6 +254,7 @@
             const lastEntry = stats.lastEntry;
             
             // Determine styles for the main status card
+            // Nota: Se o lucro do dia for negativo (mesmo que won=true), podemos mudar a cor do valor
             const isWin = lastEntry.won;
             const statusColor = isWin ? 'text-emerald-400' : 'text-rose-400';
             const statusBg = isWin ? 'from-emerald-500/10 to-emerald-500/5 border-emerald-500/20' : 'from-rose-500/10 to-rose-500/5 border-rose-500/20';
@@ -264,8 +267,9 @@
                 `<span class="px-2 py-1 bg-zinc-800 border border-zinc-700 rounded text-xs text-zinc-400">${h}</span>`
             ).join('');
 
-            // Cor do Saldo
+            // Cor do Saldo e do Resultado do Dia (pode ser negativo mesmo ganhando)
             const saldoColor = stats.customSaldo >= 0 ? 'text-zinc-300' : 'text-rose-400';
+            const dailyResultColor = lastEntry.profit >= 0 ? 'text-emerald-400' : 'text-rose-400';
 
             // HTML extra se tiver Giveaway
             let giveawayHtml = '';
@@ -301,8 +305,8 @@
                             </div>
 
                             <div class="flex flex-col gap-1 text-right">
-                                <span class="text-xs font-bold uppercase tracking-widest text-zinc-500">Resultado do Dia</span>
-                                <span class="text-4xl md:text-5xl font-mono font-bold ${statusColor}">
+                                <span class="text-xs font-bold uppercase tracking-widest text-zinc-500">Resultado Real do Dia</span>
+                                <span class="text-4xl md:text-5xl font-mono font-bold ${dailyResultColor}">
                                     ${lastEntry.profit > 0 ? '+' : ''}${formatCurrency(lastEntry.profit)}
                                 </span>
                                 ${giveawayHtml}
@@ -389,7 +393,7 @@
                 let onClick = "";
 
                 if (entry) {
-                    const isWin = entry.profit >= 0;
+                    const isWin = entry.profit >= 0; // Agora baseia-se no lucro real (pós giveaway)
                     const colorClass = isWin ? 'bg-emerald-500' : 'bg-rose-500';
                     const textClass = isWin ? 'text-emerald-400' : 'text-rose-400';
                     
@@ -488,7 +492,7 @@
 
                     <div class="space-y-4">
                         <div class="bg-black/20 p-4 rounded-lg border border-zinc-800">
-                            <p class="text-xs text-zinc-500 uppercase font-bold">Resultado (Cassino)</p>
+                            <p class="text-xs text-zinc-500 uppercase font-bold">Resultado Real (Cassino - Chat)</p>
                             <p class="text-2xl font-mono font-bold text-${color}-400">
                                 ${entry.profit > 0 ? '+' : ''}${formatCurrency(entry.profit)}
                             </p>
