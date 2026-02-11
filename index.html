@@ -138,6 +138,15 @@
         // --- DADOS ---
         const historyData = [
             {
+                id: 0,
+                date: '08/02/2026',
+                deposit: 17215,
+                withdraw: 0,
+                games: ['Casino'],
+                houses: ['Casa de Apostas'],
+                won: false
+            },
+            {
                 id: 1,
                 date: '09/02/2026',
                 deposit: 6000,
@@ -245,6 +254,9 @@
                 `<span class="px-2 py-1 bg-zinc-800 border border-zinc-700 rounded text-xs text-zinc-400">${h}</span>`
             ).join('');
 
+            // Cor do Saldo
+            const saldoColor = stats.customSaldo >= 0 ? 'text-zinc-300' : 'text-rose-400';
+
             const html = `
                 <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 animate-fade-in">
                     
@@ -293,7 +305,7 @@
                             </div>
                             <div class="mt-4 pt-4 border-t border-zinc-800 flex justify-between items-center text-sm">
                                 <span class="text-zinc-500">Saldo (Bolso)</span>
-                                <span class="text-zinc-300 font-mono font-bold">${formatCurrency(stats.customSaldo)}</span>
+                                <span class="${saldoColor} font-mono font-bold">${formatCurrency(stats.customSaldo)}</span>
                             </div>
                         </div>
 
