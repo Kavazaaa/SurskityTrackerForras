@@ -173,6 +173,33 @@
                 games: ['Slots'],
                 houses: ['Casa de Apostas'],
                 won: false
+            },
+            {
+                id: 4,
+                date: '12/02/2026',
+                deposit: 2000,
+                withdraw: 0,
+                games: ['Slots'],
+                houses: ['Casa de Apostas'],
+                won: false
+            },
+            {
+                id: 5,
+                date: '13/02/2026',
+                deposit: 8900, // 8000 + 900
+                withdraw: 7500, // Recuperou parte, mas fechou negativo
+                games: ['Slots'],
+                houses: ['Casa de Apostas'],
+                won: false
+            },
+            {
+                id: 6,
+                date: '14/02/2026',
+                deposit: 7000,
+                withdraw: 11000,
+                games: ['Slots'],
+                houses: ['Casa de Apostas'],
+                won: true
             }
         ];
 
@@ -205,8 +232,8 @@
                 currentBankroll += profit;
                 
                 // Lógica do Saldo: 
-                // Se ganhou: Soma o saque REAL (já descontado o giveaway)
-                // Se perdeu: Subtrai o depósito
+                // Se ganhou (won=true): Soma o saque REAL (já descontado o giveaway)
+                // Se perdeu (won=false): Subtrai o depósito (independente se recuperou parte, regra binária)
                 if (entry.won) {
                     customSaldo += realWithdraw;
                 } else {
